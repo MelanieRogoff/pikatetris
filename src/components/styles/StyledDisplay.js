@@ -5,10 +5,9 @@ export const StyledDisplay = styled.div`
     display: flex;
     align-items: center;
     margin: 0 0 20px 0;
-    padding: 20px;
+    padding: 10px;
     border: 4px solid #333;
-    min-height: 30px;
-    width: 100px;
+    width: 90px;
     border-radius: 30px;
     color: ${props => (props.gameOver ? 'red' : '#999')};
     background: pink;

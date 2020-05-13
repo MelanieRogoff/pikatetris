@@ -1,30 +1,124 @@
-import React from 'react';
-import { createStage } from '../gameHelpers';
-import {StyledTetrisWrapper, StyledTetris} from './styles/StyledTetris';
+import React, { useState } from 'react';
+import lbf from "../lbf.mp3"
+import { createStage, checkCollision } from '../gameHelpers';
+import { StyledTetrisWrapper, StyledTetris } from './styles/StyledTetris';
 
-//Components
-import Stage from './Stage.js';
-import Display from './Display.js';
-import StartButton from './StartButton.js';
+// Custom Hooks
+import { useInterval } from '../hooks/useInterval';
+import { usePlayer } from '../hooks/usePlayer';
+import { useStage } from '../hooks/useStage';
+import { useGameStatus } from '../hooks/useGameStatus';
+
+// Components
+import Stage from './Stage';
+import Display from './Display';
+import StartButton from './StartButton';
 
 const Tetris = () => {
-    return (
+  const [dropTime, setDropTime] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
 
-            <StyledTetrisWrapper>
-                <StyledTetris>
-                    <Stage stage={createStage()}/>
-                    <aside>
-                <div>
-                    {/* aside is the sidebar */}
-                    <Display text="Score"/>
-                    <Display text="Rows"/>
-                    <Display text="Level"/>
-                    </div>
-                    <StartButton/>
-                    </aside>
-                    </StyledTetris>
-                    </StyledTetrisWrapper>
-    )
-};
+  const [player, updatePlayerPos, resetPlayer, playerRotate] = usePlayer();
+  const [stage, setStage, rowsCleared] = useStage(player, resetPlayer);
+  const [score, setScore, rows, setRows, level, setLevel] = useGameStatus(
+    rowsCleared
+  );
+
+  const movePlayer = dir => {
+    if (!checkCollision(player, stage, { x: dir, y: 0 })) {
+      updatePlayerPos({ x: dir, y: 0 });
+    }
+  };
+
+  const keyUp = ({ keyCode }) => {
+    if (!gameOver) {
+      if (keyCode === 40) {
+        setDropTime(1000 / (level + 1));
+      }
+    }
+  };
+
+    const startGame = () => {
+        //reset everything
+        setStage(createStage);
+        setDropTime(1000);
+        resetPlayer();
+        setGameOver(false);
+        setScore(0);
+        setRows(0);
+        setLevel(0);
+    }
+
+    const drop = () => { 
+        setDropTime(1000/4);
+        //Increase level when player clears 10 rows
+        if (rows > (level + 1) * 10) {
+            setLevel(prev => prev + 1);
+            //Increase speed as well
+            setDropTime(1000 / (level + 1) + 200);
+        }
+
+        if (!checkCollision(player, stage, { x: 0, y: 1})) {
+            updatePlayerPos({ x: 0, y: 1, collided: false});
+        } else { //Game over functioning
+            if (player.pos.y < 1) { 
+                setGameOver(true);
+                setDropTime(null);
+            }
+            updatePlayerPos({ x: 0, y: 0, collided: true})
+        }
+    };
+
+    const dropPlayer = () => {
+        setDropTime(null);
+        drop();
+    };
+
+    useInterval(() => {
+        drop();
+    }, dropTime)
+
+
+    const move = ({ keyCode }) => {
+        if (!gameOver) {
+            if (keyCode === 37) { //code for left arrow on keyboard  
+                movePlayer(-1); //move left
+            } else if (keyCode === 39) { //code for right arrow on keyboard
+                movePlayer(1); //move right
+            } else if (keyCode === 40) { //code for down arrow
+                dropPlayer(); //move player down
+            } else if (keyCode === 38) {
+                playerRotate(stage, 1);
+            }
+        }
+    }
+
+    return (
+        <StyledTetrisWrapper
+            role="button"
+            tabIndex="0"
+            onKeyDown={e => move(e)}
+            onKeyUp={keyUp}
+        >
+                    <audio id="lbf" controls src={lbf}></audio>
+
+            <StyledTetris>
+                <Stage stage={stage}/>
+                <aside>
+                    {gameOver ? (
+                        <Display gameOver={gameOver} text="Game Over" />
+                        ) : (
+                            <div>
+                                <Display text={`Score: ${score}`} />
+                                <Display text={`rows: ${rows}`} />
+                                <Display text={`Level: ${level}`} />
+                            </div>
+                    )}
+                        <StartButton callback={startGame} />
+                </aside>
+            </StyledTetris>
+        </StyledTetrisWrapper>
+        
+    )};
 
 export default Tetris;

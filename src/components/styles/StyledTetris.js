@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import bgImage from '../../img/pikabng.jpg';
 
 export const StyledTetrisWrapper = styled.div`
-width: 100vh;
+width: 100%;
 height: 100vh;
 background: url(${bgImage}) #000;
 background-size: cover;
@@ -13,17 +13,16 @@ margin: 0 auto;
 
 export const StyledTetris = styled.div`
     display: flex;
-    align-items: flex-start;
     max-width: 900px;
     position: relative;
-    left: 100px;
-    top: 120px;
+    left: 520px;
+    top: 50px;
 
 
     aside {
-        width: 100%;
+        width: 40%;
         position: relative;
-        top: 100px;
+        top: 40px;
         max-width: 200px;
         display: block;
         padding: 0 20px;
