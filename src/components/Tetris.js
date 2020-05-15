@@ -41,7 +41,7 @@ const Tetris = () => {
     const startGame = () => {
         //reset everything
         setStage(createStage);
-        setDropTime(1000);
+        setDropTime(140);
         resetPlayer();
         setGameOver(false);
         setScore(0);
@@ -50,12 +50,10 @@ const Tetris = () => {
     }
 
     const drop = () => { 
-        setDropTime(1000/4);
+        setDropTime(140);
         //Increase level when player clears 10 rows
-        if (rows > (level + 1) * 10) {
+        if (rows > (level + 1) * 2) {
             setLevel(prev => prev + 1);
-            //Increase speed as well
-            setDropTime(1000 / (level + 1) + 200);
         }
 
         if (!checkCollision(player, stage, { x: 0, y: 1})) {
@@ -63,6 +61,7 @@ const Tetris = () => {
         } else { //Game over functioning
             if (player.pos.y < 1) { 
                 setGameOver(true);
+                alert(`Congrats! Your score is: ${score}`);
                 setDropTime(null);
             }
             updatePlayerPos({ x: 0, y: 0, collided: true})
@@ -78,6 +77,13 @@ const Tetris = () => {
         drop();
     }, dropTime)
 
+
+    const handleKeys = (event) => {
+        if (event.keyCode === 40 || event.keyCode === 38 || event.keyCode === 37 || event.keyCode === 39) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }
 
     const move = ({ keyCode }) => {
         if (!gameOver) {
@@ -97,10 +103,15 @@ const Tetris = () => {
         <StyledTetrisWrapper
             role="button"
             tabIndex="0"
-            onKeyDown={e => move(e)}
+            onKeyDown={e => move(e)} 
             onKeyUp={keyUp}
         >
-                    <audio id="lbf" controls src={lbf}></audio>
+
+            {console.log(lbf)}
+                    <audio id="lbf" 
+                        controls src={lbf}
+                        handleKeys={handleKeys}
+                        ></audio>
 
             <StyledTetris>
                 <Stage stage={stage}/>
